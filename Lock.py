@@ -2,6 +2,14 @@
 
 
 class Lock:
+# <<<<<<< Lock_class
+#     def __init__(self,  Type_of_Lock, Get_Time, Transaction_ID):
+#         self.Type_of_Lock = Type_of_Lock
+#         self.Get_Time = Get_Time
+#         self.Transaction_ID = Transaction_ID
+#         self.siteID = 0
+#         varId = 0
+# =======
     def __init__(self, site_id) -> None:
         self.site_id = site_id
         self.arraynum = 20
@@ -145,3 +153,4 @@ class Lock:
             for j in range(0, len(lock)):
                 if lock[j].transaction_id == transaction_id:
                     self.lock_table[i].pop(j-1)
+# >>>>>>> master
