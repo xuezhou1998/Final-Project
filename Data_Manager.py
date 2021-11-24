@@ -51,3 +51,32 @@ class Data_Manager:
             if crr_time< start_time and crr_time>last_cmmt_time_bf_start:
                 return False
         return True
+    def get_last_fail_time(self,site_id):
+        failure_time_size=len(self.site_failure_times[site_id])
+        return self.site_failure_times[site_id][failure_time_size-1]
+    def write(self, variable_id,value,site_id,time_stamp):
+        curr_site=self.site_dict[site_id]
+        curr_site.write(variable_id,value,time_stamp)
+    def sites_failed(self,site_id):
+        return self.site_failures[site_id]
+    def make_fail(self, site_id, time_stamp):
+        curr_site= self.get_site_instance(site_id)
+        curr_site.site_fail()
+        self.site_failures[site_id]=True
+        self.site_failure_times[site_id].append(time_stamp)
+    def recover_site(self,site_id,time_stamp):
+        curr_site=self.get_site_instance(site_id)
+        failure_time_size=len(self.site_failure_times[site_id])
+        curr_site.site_recover(time_stamp,self.site_failure_times[site_id][failure_time_size-1])
+        self.site_failures[site_id]=False
+    def get_site_variable_value(self, site_id, variable_id):
+        curr_site=self.get_site_instance(site_id)
+        return curr_site.get_value(variable_id)
+    def get_recovery_time(self,site_id):
+        return self.get_site_instance(site_id).recover_time
+    def release_site_locks(self, transaction_id,site_id):
+        if self.sites_failed(site_id)!=True:
+            curr_site=self.get_site_instance(site_id)
+            curr_site.release_lock(transaction_id)
+
+
