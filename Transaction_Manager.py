@@ -1,10 +1,6 @@
 # import typing_extensions
 from Data_Manager import Data_Manager
-from Lock import Lock
-from Query_Parser import Query_Parser
-from Site import Site
 from Transaction import Transaction
-from Variable import Variable
 import Constant
 
 
@@ -114,7 +110,6 @@ class Transaction_Manager:
                 curr_transaction.waiting_for_trans_id = wait_id
                 curr_transaction.blocked = True
                 return False
-
         else:
             id_list = []
             should_be_blocked = False
@@ -260,9 +255,9 @@ class Transaction_Manager:
 
     def unblock_trans(self, trans_id):
         for t in self.trans_map.values():
-            if t.waiting_for_trans_id==trans_id and t.blocked:
-                t.blocked=False
-                t.waiting_for_trans_id=-1
+            if t.waiting_for_trans_id == trans_id and t.blocked:
+                t.blocked = False
+                t.waiting_for_trans_id = -1
         return 0
 
     def trans_init_checker(self, trans_id):
@@ -272,21 +267,21 @@ class Transaction_Manager:
 
     def alive_checker(self, trans_id):
         if trans_id not in self.trans_map.keys():
-            print("Transaction %d is not alive.",trans_id)
+            print("Transaction %d is not alive.", trans_id)
             return False
-        print("Transaction %d is alive.",trans_id)
+        print("Transaction %d is alive.", trans_id)
 
         return True
-
 
     def recover(self, site_id):
-        self.data_mgr.recover_site(site_id,self.time_stamp)
-        print("Recover site %d successful at time stamp %s",site_id,str(self.time_stamp))
+        self.data_mgr.recover_site(site_id, self.time_stamp)
+        print("Recover site %d successful at time stamp %s", site_id, str(self.time_stamp))
         return True
+
     def fail(self, site_id):
-        self.data_mgr.make_fail(site_id,self.time_stamp)
+        self.data_mgr.make_fail(site_id, self.time_stamp)
         self.abort_trans_multi(site_id)
-        print("Has made site %d failed",site_id)
+        print("Has made site %d failed", site_id)
         return True
 
     def is_replicated_variable(self, variable_id):
@@ -294,3 +289,8 @@ class Transaction_Manager:
             return False
         else:
             return True
+
+
+# if __name__ == "__main__":
+#     t = Transaction_Manager()
+#     print(t.write(1, 2, 102))
