@@ -20,19 +20,22 @@ def main(input_file_path):
         in_waitlist = False
 
         if len(cmmd_waitlist) > 0 and waitlist_idx < len(cmmd_waitlist):
-            print("waitlist_idx %d", waitlist_idx)
+            print("waitlist index {}".format(waitlist_idx))
             fetched = cmmd_waitlist[waitlist_idx]
             in_waitlist = True
         else:
 
             qry = file_read.readline()
-            if len(qry)==0:
+            if len(qry) == 0:
                 break
+            if not ('(' and ')') in qry:
+                continue
             if '//' in qry:
                 qry = qry[:qry.index('//')]
+                # qry = qry.strip()
             if qry is not None and qry != '\n' and qry.strip() != "":
 
-                fetched = Query_Parser.parse_query(qry)
+                fetched = Query_Parser.parse_query(qry.strip())
             else:
                 # break
                 continue
@@ -53,10 +56,10 @@ def main(input_file_path):
             exe_result = trans_mgr.dump()
         elif fetched[0] == 'end':
             exe_result = trans_mgr.end(int(fetched[1]))
-
+        pre_cmmd_waitlist_len=len(cmmd_waitlist)
         if exe_result == True:
             if in_waitlist == True:
-                cmmd_waitlist.remove(waitlist_idx)
+                cmmd_waitlist.remove(cmmd_waitlist[waitlist_idx])
             waitlist_idx = 0
         else:
             if in_waitlist == False:
@@ -65,9 +68,13 @@ def main(input_file_path):
             else:
                 waitlist_idx += 1
         trans_mgr.time_stamp += 1
-        trans_mgr.dead_lock_detect()
-
-
+        deadlock_detection_result = trans_mgr.dead_lock_detect()
+        # if len(cmmd_waitlist) == 0 and pre_cmmd_waitlist_len > 0:
+        #
+        if deadlock_detection_result == -2:
+            print("===================================================================================================")
+        # if deadlock_detection_result ==-2:
+        #     break
 
     # except:
     #     print("Something went wrong")

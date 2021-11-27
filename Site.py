@@ -1,8 +1,6 @@
-
 from Lock import Lock
 
 from Variable import Variable
-
 
 
 class Site:
@@ -133,7 +131,8 @@ class Site:
 
     def write(self, var_id, value, time_stamp):
         lists = self.vartable[var_id]
-        v = Variable(time_stamp, value)
+        # v = Variable(time_stamp, value)
+        v = Variable(value, time_stamp)
         self.vartable[var_id].append(v)
 
     def site_recover(self, time_stamp, last_fail_time):
@@ -145,7 +144,10 @@ class Site:
     def release_lock(self, transaction_id):
         for i in list(self.lock_table.keys()):
             lock_instance = self.lock_table[i]
+            new_list = []
             for j in range(0, len(lock_instance)):
-                if lock_instance[j].transaction_id == transaction_id:
+                if lock_instance[j].transaction_id != transaction_id:
                     # self.lock_table[i].pop(j-1)
-                    self.lock_table[i].pop(j)
+                    # self.lock_table[i].pop(j-1)
+                    new_list.append(lock_instance[j])
+            self.lock_table[i] = new_list.copy()

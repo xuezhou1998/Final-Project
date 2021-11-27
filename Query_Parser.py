@@ -7,19 +7,21 @@ def get_argument(input_query: str) -> List:
     args_raw = input_query[left + 1: right].split(",")
     args = []
     for i in args_raw:
-        if i.strip() != "" and i.isdigit()==False:
-            i = i.strip()[1:]
+        i = i.strip()
+        if i != "" and i.isdigit() == False:
+            i = i[1:]
         args.append(i)
     return args
 
 
 def parse_query(input_query: str) -> List:
     res = []
-    print("debug")
+    # print("debug")
+
     commd = input_query[:input_query.index("(")]
     res.append(commd)
     res += get_argument(input_query)
-    print("parsed command is : %s", str(res))
+    print("parsed command is : {}".format(str(res)) )
     return res
 
 

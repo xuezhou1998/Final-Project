@@ -25,7 +25,7 @@ class Data_Manager:
 
     def read_only_non_replicated_read(self, variable_id, time_stamp, site_id):
         curr_site = self.get_site_instance(site_id)
-        history = curr_site.variable_table[variable_id]
+        history = curr_site.vartable[variable_id]
         for i in reversed(range(len(history))):
             if history[i].version <= time_stamp:
                 return history[i].value
@@ -33,7 +33,7 @@ class Data_Manager:
 
     def read_only_replicated_read(self, variable_id, time_stamp, site_id):
         curr_site = self.get_site_instance(site_id)
-        history = curr_site.variable_table[variable_id]
+        history = curr_site.vartable[variable_id]
         for i in reversed(range(len(history))):
             if history[i].version > time_stamp:
                 continue
@@ -69,8 +69,9 @@ class Data_Manager:
 
     def recover_site(self, site_id, time_stamp):
         curr_site = self.get_site_instance(site_id)
-        failure_time_size = len(self.site_failure_times[site_id])
-        curr_site.site_recover(time_stamp, self.site_failure_times[site_id][failure_time_size - 1])
+        # failure_time_size = len(self.site_failure_times[site_id])
+        # curr_site.site_recover(time_stamp, self.site_failure_times[site_id][failure_time_size - 1])
+        curr_site.site_recover(time_stamp, self.site_failure_times[site_id][-1])
         self.site_failures[site_id] = False
 
     def get_site_variable_value(self, site_id, variable_id):
