@@ -108,7 +108,7 @@ def main_file(input_file_path):
 
 
 if __name__ == "__main__":
-    # main("testcases.txt")
+    main("testcases.txt")
     main("testCases")
     # main("testCases/testcase2.txt")
     # t=Transaction_Manager()
