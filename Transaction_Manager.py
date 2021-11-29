@@ -53,7 +53,7 @@ class Transaction_Manager:
         return True
 
     def obtain_attributes(self, input_list=[]):
-        pass
+        return self.data_mgr.check_data_consist([self.time_stamp])
 
     def read(self, trans_id, variable_id):
         if self.alive_checker(trans_id) == False:
@@ -94,7 +94,7 @@ class Transaction_Manager:
         return False
 
     def debug_check(self, input_list=[]):
-        pass
+        return self.variable_check()
 
     def dump(self):
         my_string = ""
@@ -130,7 +130,7 @@ class Transaction_Manager:
             curr_transaction.blocked = True
         return False
     def variable_check(self, input_list=[]):
-        pass
+        return [self.data_mgr]
     def dead_lock_detect(self):
 
         trans_list = []

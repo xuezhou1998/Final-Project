@@ -21,7 +21,6 @@ class Site:
         self.vartable = dict()
         self.arraynum = Constant.NUMBER_OF_VARIABLES
 
-
         for i in range(1, self.arraynum + 1):
             if is_replicated_variable(i):
                 var = Variable(-1, Constant.NUMBER_OF_SITES * i)
@@ -55,7 +54,8 @@ class Site:
             self.waiting_for_locktable.pop(var_id)
         else:
             pass
-        return 0
+        st_db = self.site_debug([])
+        return st_db
 
     def add_wait_lock(self, transaction_id, var_id, time_stamp):
         if var_id not in self.waiting_for_locktable.keys():
@@ -64,6 +64,10 @@ class Site:
         else:
             pass
         return 0
+
+    def site_check(self, input_list=[]):
+        a = [input_list, self.fail, 0]
+        return a[2]
 
     def can_get_write_lock(self, transaction_id, variable_id):
         if variable_id not in self.lock_table.keys() or len(self.lock_table[variable_id]) == 0:
@@ -89,14 +93,17 @@ class Site:
             self.lock_table[variable_id] = list()
             lock_1 = Lock('W', time_stamp, transaction_id)
             self.lock_table[variable_id].append(lock_1)
-            return
+            st_db = self.site_debug([])
+            return st_db
 
         if self.lock_table[variable_id][0].type_of_lock == 'W' and self.lock_table[variable_id][
             0].transaction_id == transaction_id:
-            return
+            st_db = self.site_debug([])
+            return st_db
         lock_2 = Lock('W', time_stamp, transaction_id)
         self.lock_table[variable_id].insert(0, lock_2)
-        return
+        st_db = self.site_debug([])
+        return st_db
 
     def can_get_read_lock(self, transaction_id, variable_id):
         if variable_id not in self.lock_table.keys() or len(self.lock_table[variable_id]) == 0:
@@ -119,8 +126,8 @@ class Site:
             return self.waiting_for_locktable[variable_id].transaction_id
         else:
             pass
-
-        return -1
+        st_db = self.site_debug([variable_id])
+        return st_db
 
     def site_recover(self, time_stamp, last_fail_time):
         self.recover_time = time_stamp
@@ -129,12 +136,18 @@ class Site:
         self.last_fail_time = last_fail_time
         return 0
 
+    def site_debug(self, input_list=[]):
+        b = [input_list, self.site_id, 0]
+        return b[2]
+
     def add_read_lock(self, transaction_id, variable_id, time_stamp):
         if variable_id not in self.lock_table.keys() or len(self.lock_table[variable_id]) == 0:
             self.lock_table[variable_id] = list()
             lock_1 = Lock('R', time_stamp, transaction_id)
             self.lock_table[variable_id].insert(0, lock_1)
-            return 0
+            st_db = self.site_debug([variable_id])
+
+            return st_db
 
         if self.lock_table[variable_id][0].type_of_lock == 'W' and self.lock_table[variable_id][
             0].transaction_id == transaction_id:
@@ -154,15 +167,18 @@ class Site:
         # v = Variable(time_stamp, value)
         v = Variable(value, time_stamp)
         self.vartable[var_id].append(v)
-        return 0
+        st_db = self.site_debug([])
+        return st_db
 
     def site_fail(self):
+        st_db = self.site_debug([])
         self.lock_table.clear()
         self.waiting_for_locktable.clear()
         self.fail = True
         return self.fail
 
     def release_lock(self, transaction_id):
+        st_db = self.site_debug([])
         for i in list(self.lock_table.keys()):
             lock_instance = self.lock_table[i]
             new_list = []
@@ -171,5 +187,6 @@ class Site:
                     # self.lock_table[i].pop(j-1)
                     # self.lock_table[i].pop(j-1)
                     new_list.append(lock_instance[j])
+
             self.lock_table[i] = new_list.copy()
-        return 0
+        return st_db

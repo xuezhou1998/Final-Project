@@ -37,7 +37,9 @@ class Data_Manager:
         return -1
 
     def check_data_consist(self, input_list=[]):
-        return input_list
+        a = [input_list, 0, self.site_dict]
+
+        return a[1]
 
     def is_always_up(self, last_cmmt_time_bf_start, start_time, site_id):
         failed_time = self.site_failure_times[site_id]
