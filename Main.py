@@ -1,9 +1,24 @@
 import Query_Parser
-
+import os
 from Transaction_Manager import Transaction_Manager
 
+def main(input_path):
+    # checks if path is a file
+    is_file = os.path.isfile(input_path)
 
-def main(input_file_path):
+    # checks if path is a directory
+    is_directory = os.path.isdir(input_path)
+    if is_file:
+        main_file(input_path)
+    elif is_directory:
+        for filename in os.listdir(input_path):
+            if filename.endswith(".txt"):
+                file_path = os.path.join(input_path, filename)
+                main_file(file_path)
+            else:
+                continue
+
+def main_file(input_file_path):
     # print("Hello World!")
     trans_mgr = Transaction_Manager()
     cmmd_waitlist = []
@@ -80,6 +95,7 @@ def main(input_file_path):
     #     print("Something went wrong")
     # finally:
     #     print("The 'try except' is finished")
+
 
 
 if __name__ == "__main__":
