@@ -1,9 +1,32 @@
 import Query_Parser
-
+import os
 from Transaction_Manager import Transaction_Manager
 
 
-def main(input_file_path):
+def main(input_path):
+    """
+
+    :rtype: None
+    """
+    # checks if path is a file
+    is_file = os.path.isfile(input_path)
+
+    # checks if path is a directory
+    is_directory = os.path.isdir(input_path)
+    if is_file:
+        main_file(input_path)
+    elif is_directory:
+        for filename in sorted(list(os.listdir(input_path))):
+            if filename.endswith(".txt"):
+                file_path = os.path.join(input_path, filename)
+                print(
+                    "#################################### {} #######################################".format(filename))
+                main_file(file_path)
+            else:
+                continue
+
+
+def main_file(input_file_path):
     # print("Hello World!")
     trans_mgr = Transaction_Manager()
     cmmd_waitlist = []
@@ -20,8 +43,9 @@ def main(input_file_path):
         in_waitlist = False
 
         if len(cmmd_waitlist) > 0 and waitlist_idx < len(cmmd_waitlist):
-            print("waitlist index {}".format(waitlist_idx))
             fetched = cmmd_waitlist[waitlist_idx]
+            print("waitlist index {}, command is {}".format(waitlist_idx, fetched))
+
             in_waitlist = True
         else:
 
@@ -56,7 +80,8 @@ def main(input_file_path):
             exe_result = trans_mgr.dump()
         elif fetched[0] == 'end':
             exe_result = trans_mgr.end(int(fetched[1]))
-        pre_cmmd_waitlist_len=len(cmmd_waitlist)
+        pre_cmmd_waitlist_len = len(cmmd_waitlist)
+        ob_attr = trans_mgr.obtain_attributes(cmmd_waitlist)
         if exe_result == True:
             if in_waitlist == True:
                 cmmd_waitlist.remove(cmmd_waitlist[waitlist_idx])
@@ -68,7 +93,7 @@ def main(input_file_path):
             else:
                 waitlist_idx += 1
         trans_mgr.time_stamp += 1
-        deadlock_detection_result = trans_mgr.dead_lock_detect()
+        deadlock_detection_result = [trans_mgr.dead_lock_detect(), ob_attr][0]
         # if len(cmmd_waitlist) == 0 and pre_cmmd_waitlist_len > 0:
         #
         if deadlock_detection_result == -2:
@@ -83,6 +108,8 @@ def main(input_file_path):
 
 
 if __name__ == "__main__":
-    main("testcases.txt")
+    # main("testcases.txt")
+    main("testCases")
+    # main("testCases/testcase2.txt")
     # t=Transaction_Manager()
     # print(t(1,2,102))
