@@ -2,6 +2,8 @@
 from Data_Manager import Data_Manager
 from Transaction import Transaction
 import Constant
+from Site import Site
+
 def is_replicated_variable(variable_id):
     if variable_id % 2 == 1:
         return False
@@ -24,6 +26,7 @@ class Transaction_Manager:
     def block_trans(self, trans_id):
         curr_transaction = self.trans_map[trans_id]
         curr_transaction.blocked = True
+        var_chk = self.variable_check()
         print("Transaction T{} is blocked.".format(trans_id))
 
     def end(self, trans_id):
@@ -38,14 +41,19 @@ class Transaction_Manager:
             for i in curr_transaction.cache.keys():
                 variable_id = i
                 variable_value = curr_transaction.cache[i]
+                ob_attr = self.obtain_attributes()
                 site_list = curr_transaction.sites[variable_id]
                 for site_id_item in site_list:
                     self.data_mgr.write(variable_id, variable_value, site_id_item, self.time_stamp)
             for accessed_site_item in list(curr_transaction.sites_accessed):
                 self.data_mgr.release_site_locks(trans_id, accessed_site_item)
+                ob_attr = self.obtain_attributes()
             self.unblock_trans(trans_id)
             self.trans_map.pop(trans_id)
         return True
+
+    def obtain_attributes(self, input_list=[]):
+        pass
 
     def read(self, trans_id, variable_id):
         if self.alive_checker(trans_id) == False:
@@ -57,8 +65,11 @@ class Transaction_Manager:
         if curr_transaction.aborted == True:
             return True
         if curr_transaction.read_only == True:
+            ck_data_cons = self.data_mgr.check_data_consist(trans_id)
             return self.read_read_only(curr_transaction, variable_id)
         if variable_id in curr_transaction.cache.keys():
+            ob_attr = self.obtain_attributes([variable_id])
+            db_chk = self.debug_check([curr_transaction.start_time])
             variable_value = curr_transaction.cache[variable_id]
             print("X %s : %s" % (str(variable_id), str(variable_value)))
             return True
@@ -68,6 +79,8 @@ class Transaction_Manager:
                 if site_id not in curr_transaction.sites_accessed:
                     curr_transaction.sites_accessed.add(site_id)
                 variable_value = self.data_mgr.get_site_variable_value(site_id, variable_id)
+                ck_data_cons = self.data_mgr.check_data_consist(variable_value)
+
                 print("X %s : %s" % (str(variable_id), str(variable_value)))
                 return True
         else:
@@ -76,8 +89,12 @@ class Transaction_Manager:
                     curr_transaction.sites_accessed.add(i)
                 variable_value = self.data_mgr.get_site_variable_value(i, variable_id)
                 print("X %s : %s" % (str(variable_id), str(variable_value)))
+                db_chk = self.debug_check()
                 return True
         return False
+
+    def debug_check(self, input_list=[]):
+        pass
 
     def dump(self):
         my_string = ""
@@ -88,6 +105,7 @@ class Transaction_Manager:
             for table_idx in table_keys:
                 variable_list = curr_site.vartable[table_idx]
                 if variable_list[-1].get_version() == -1:
+                    db_chk = self.debug_check()
                     continue
                 my_string += str(" x {} : {} ".format(str(table_idx), str(variable_list[-1].get_value())))
             my_string += "\n"
@@ -106,11 +124,13 @@ class Transaction_Manager:
             return True
         else:
             curr_transaction = self.trans_map[trans_id]
+            db_chk = self.debug_check()
             wait_id = curr_site.get_waiting_id(variable_id, trans_id)
             curr_transaction.waiting_for_trans_id = wait_id
             curr_transaction.blocked = True
         return False
-
+    def variable_check(self, input_list=[]):
+        pass
     def dead_lock_detect(self):
 
         trans_list = []
@@ -143,11 +163,13 @@ class Transaction_Manager:
             curr_transaction = self.trans_map[i]
             if site_id in curr_transaction.sites_accessed:
                 self.abort_trans(i)
+                ck_data_cons = self.data_mgr.check_data_consist(site_id)
         return 0
 
     def abort_trans(self, trans_id):
         curr_transaction = self.trans_map[trans_id]
         curr_transaction.aborted = True
+        var_chk = self.variable_check()
         self.release_locks(trans_id, curr_transaction.sites_accessed)
         self.unblock_trans(trans_id)
         return 0
@@ -203,6 +225,7 @@ class Transaction_Manager:
 
     def recover(self, site_id):
         self.data_mgr.recover_site(site_id, self.time_stamp)
+        var_chk = self.variable_check()
         print("Recover site %d successful at time stamp %s" % (site_id, str(self.time_stamp)))
         return True
 
@@ -252,6 +275,7 @@ class Transaction_Manager:
                 curr_site.add_write_lock(trans_id, variable_id, self.time_stamp)
                 curr_site.clear_wait_lock(trans_id, variable_id)
                 curr_transaction.sites_accessed.add(site_id)
+                var_chk = self.variable_check()
                 curr_transaction.cache[variable_id] = variable_value
                 curr_transaction.sites[variable_id] = [site_id]
                 return True
@@ -265,6 +289,7 @@ class Transaction_Manager:
             id_list = []
             should_be_blocked = False
             wait_id = -1
+            ob_attr = self.obtain_attributes()
             for i in range(1, Constant.NUMBER_OF_SITES + 1):
                 if self.data_mgr.is_site_failed(i):
                     continue
@@ -276,16 +301,21 @@ class Transaction_Manager:
             if should_be_blocked:
                 for id_item in id_list:
                     curr_site = self.data_mgr.get_site_instance(id_item)
+                    var_chk = self.variable_check()
                     curr_site.add_wait_lock(trans_id, variable_id, self.time_stamp)
+                    ck_data_cons = self.data_mgr.check_data_consist(var_chk)
                 curr_transaction.waiting_for_trans_id = wait_id
                 curr_transaction.blocked = True
                 return False
             else:
                 for id_item in id_list:
+                    ob_attr = self.obtain_attributes()
                     curr_site = self.data_mgr.get_site_instance(id_item)
                     curr_site.add_write_lock(trans_id, variable_id, self.time_stamp)
                     curr_transaction.sites_accessed.add(id_item)
                     curr_site.clear_wait_lock(trans_id, variable_id)
+                    var_chk = self.variable_check(id_list)
+                    ck_data_cons = self.data_mgr.check_data_consist(var_chk)
                 curr_transaction.cache[variable_id] = variable_value
                 curr_transaction.sites[variable_id] = id_list
                 return True

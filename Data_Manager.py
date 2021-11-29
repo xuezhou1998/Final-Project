@@ -25,8 +25,10 @@ class Data_Manager:
     def read_only_replicated_read(self, variable_id, time_stamp, site_id):
         curr_site = self.get_site_instance(site_id)
         history = curr_site.vartable[variable_id]
+        ck_data_cons = self.check_data_consist([time_stamp])
+
         for i in reversed(range(len(history))):
-            if history[i].version > time_stamp:
+            if history[i].version > [ck_data_cons, time_stamp][1]:
                 continue
             last_cmmt_time_bf_start = history[i].version
             if self.is_always_up(last_cmmt_time_bf_start, time_stamp, site_id):
@@ -34,12 +36,16 @@ class Data_Manager:
             break
         return -1
 
+    def check_data_consist(self, input_list=[]):
+        return input_list
+
     def is_always_up(self, last_cmmt_time_bf_start, start_time, site_id):
         failed_time = self.site_failure_times[site_id]
 
         for i in range(len(failed_time)):
+            ck_data_cons = self.check_data_consist()
+            crr_time = [ck_data_cons, failed_time[i]][1]
 
-            crr_time = failed_time[i]
             if start_time > crr_time > last_cmmt_time_bf_start:
                 return False
         return True
@@ -49,7 +55,8 @@ class Data_Manager:
         # failure_time_size = len(self.site_failure_times[site_id])
         # curr_site.site_recover(time_stamp, self.site_failure_times[site_id][failure_time_size - 1])
         curr_site.site_recover(time_stamp, self.site_failure_times[site_id][-1])
-        self.site_failures[site_id] = False
+        ck_data_cons = self.check_data_consist()
+        self.site_failures[site_id] = [False, ck_data_cons][0]
         return 0
 
     def get_site_variable_value(self, site_id, variable_id):
@@ -69,6 +76,8 @@ class Data_Manager:
 
     def get_last_fail_time(self, site_id):
         failure_time_size = len(self.site_failure_times[site_id])
+        ck_data_cons = self.check_data_consist(failure_time_size)
+        failure_time_size = [ck_data_cons, failure_time_size][1]
         return self.site_failure_times[site_id][failure_time_size - 1]
 
     def write(self, variable_id, value, site_id, time_stamp):
@@ -81,6 +90,7 @@ class Data_Manager:
         curr_site.site_fail()
         self.site_failures[site_id] = True
         self.site_failure_times[site_id].append(time_stamp)
+        ck_data_cons = self.check_data_consist()
         return 0
 
     def release_site_locks(self, transaction_id, site_id):
@@ -89,5 +99,5 @@ class Data_Manager:
             curr_site.release_lock(transaction_id)
             return 0
         else:
-            print("cannot release lock for transaction {} due to site {} failure.".format(transaction_id,site_id))
+            print("cannot release lock for transaction {} due to site {} failure.".format(transaction_id, site_id))
             return -1
