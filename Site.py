@@ -1,6 +1,13 @@
 from Lock import Lock
 
 from Variable import Variable
+import Constant
+
+def is_replicated_variable(variable_id):
+    if variable_id % 2 == 1:
+        return False
+    else:
+        return True
 
 
 class Site:
@@ -16,13 +23,13 @@ class Site:
         self.vartable = dict()
 
         for i in range(1, self.arraynum + 1):
-            if i % 2 == 0:
-                var = Variable(-1, 10 * i)
+            if is_replicated_variable(i):
+                var = Variable(-1, Constant.NUMBER_OF_SITES * i)
                 self.vartable[i] = list()
                 self.vartable[i].append(var)
             else:
-                if i % 10 + 1 == self.site_id:
-                    var = Variable(-1, 10 * i)
+                if i % Constant.NUMBER_OF_SITES + 1 == self.site_id:
+                    var = Variable(-1, Constant.NUMBER_OF_SITES * i)
                     self.vartable[i] = list()
                     self.vartable[i].append(var)
 
@@ -34,9 +41,9 @@ class Site:
         return self.vartable[variable_id][size - 1].value
 
     def has_variable(self, variable_id):
-        if variable_id % 2 == 0:
+        if is_replicated_variable(variable_id):
             return True
-        return self.site_id == variable_id % 10
+        return self.site_id == variable_id % Constant.NUMBER_OF_SITES
 
     def get_var_last_commited_time(self, variable_id):
         size = len(self.vartable[variable_id])

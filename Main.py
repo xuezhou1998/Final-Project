@@ -3,6 +3,10 @@ import os
 from Transaction_Manager import Transaction_Manager
 
 def main(input_path):
+    """
+
+    :rtype: None
+    """
     # checks if path is a file
     is_file = os.path.isfile(input_path)
 
@@ -11,9 +15,10 @@ def main(input_path):
     if is_file:
         main_file(input_path)
     elif is_directory:
-        for filename in os.listdir(input_path):
+        for filename in sorted(list(os.listdir(input_path))):
             if filename.endswith(".txt"):
                 file_path = os.path.join(input_path, filename)
+                print("#################################### {} #######################################".format(filename))
                 main_file(file_path)
             else:
                 continue
@@ -35,8 +40,9 @@ def main_file(input_file_path):
         in_waitlist = False
 
         if len(cmmd_waitlist) > 0 and waitlist_idx < len(cmmd_waitlist):
-            print("waitlist index {}".format(waitlist_idx))
             fetched = cmmd_waitlist[waitlist_idx]
+            print("waitlist index {}, command is {}".format(waitlist_idx,fetched))
+
             in_waitlist = True
         else:
 
@@ -99,6 +105,8 @@ def main_file(input_file_path):
 
 
 if __name__ == "__main__":
-    main("testcases.txt")
+    # main("testcases.txt")
+    main("testCases")
+    # main("testCases/testcase2.txt")
     # t=Transaction_Manager()
     # print(t(1,2,102))

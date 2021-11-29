@@ -2,7 +2,11 @@
 from Data_Manager import Data_Manager
 from Transaction import Transaction
 import Constant
-
+def is_replicated_variable(variable_id):
+    if variable_id % 2 == 1:
+        return False
+    else:
+        return True
 
 class Transaction_Manager:
     def __init__(self) -> None:
@@ -43,7 +47,7 @@ class Transaction_Manager:
             variable_value = curr_transaction.cache[variable_id]
             print("X %s : %s" % (str(variable_id), str(variable_value)))
             return True
-        if self.is_replicated_variable(variable_id) == False:
+        if is_replicated_variable(variable_id) == False:
             site_id = variable_id % Constant.NUMBER_OF_SITES + 1
             if self.get_read_lock(trans_id, variable_id, site_id) == True:
                 if site_id not in curr_transaction.sites_accessed:
@@ -61,7 +65,7 @@ class Transaction_Manager:
         return False
 
     def read_read_only(self, curr_transaction, variable_id):
-        if self.is_replicated_variable(variable_id) == False:
+        if is_replicated_variable(variable_id) == False:
             site_id = variable_id % Constant.NUMBER_OF_SITES + 1
 
             if self.data_mgr.is_site_failed(site_id) == True:
@@ -92,7 +96,7 @@ class Transaction_Manager:
             return True
         if curr_transaction.blocked == True:
             return False
-        if self.is_replicated_variable(variable_id) == False:
+        if is_replicated_variable(variable_id) == False:
             site_id = variable_id % Constant.NUMBER_OF_SITES + 1
             if self.data_mgr.is_site_failed(site_id) == True:
                 return False
@@ -142,6 +146,7 @@ class Transaction_Manager:
     def block_trans(self, trans_id):
         curr_transaction = self.trans_map[trans_id]
         curr_transaction.blocked = True
+        print("Transaction T{} is blocked.".format(trans_id))
 
     def end(self, trans_id):
         curr_transaction = self.trans_map[trans_id]
@@ -168,13 +173,13 @@ class Transaction_Manager:
         my_string = ""
         for i in range(1, Constant.NUMBER_OF_SITES + 1):
             curr_site = self.data_mgr.get_site_instance(i)
-            my_string += str("site {} - ".format(i) )
+            my_string += str("site {} - ".format(i))
             table_keys = list(sorted(curr_site.vartable.keys()))
             for table_idx in table_keys:
                 variable_list = curr_site.vartable[table_idx]
                 if variable_list[-1].get_version() == -1:
                     continue
-                my_string += str(" x {} : {} ".format(str(table_idx), str(variable_list[-1].get_value())) )
+                my_string += str(" x {} : {} ".format(str(table_idx), str(variable_list[-1].get_value())))
             my_string += "\n"
         print(my_string)
         return True
@@ -183,7 +188,7 @@ class Transaction_Manager:
         if self.data_mgr.is_site_failed(site_id):
             return False
         curr_site = self.data_mgr.get_site_instance(site_id)
-        if self.is_replicated_variable(variable_id) and curr_site.just_recovery:
+        if is_replicated_variable(variable_id) and curr_site.just_recovery:
             if curr_site.get_var_last_commited_time(variable_id) < self.data_mgr.get_last_fail_time(site_id):
                 return False
         if curr_site.can_get_read_lock(trans_id, variable_id):
@@ -213,7 +218,7 @@ class Transaction_Manager:
                 if curr_transaction.waiting_for_trans_id in trans_list:
                     print("There is a deadlock.")
                     youngest_id = self.find_yongest(trans_list)
-                    print("Transaction  T{} is aborted.".format(youngest_id) )
+                    print("Transaction  T{} is aborted.".format(youngest_id))
                     self.abort_trans(youngest_id)
                     self.trans_map.pop(youngest_id)
                     return -1
@@ -275,7 +280,7 @@ class Transaction_Manager:
 
     def recover(self, site_id):
         self.data_mgr.recover_site(site_id, self.time_stamp)
-        print("Recover site %d successful at time stamp %s" % (site_id, str(self.time_stamp)) )
+        print("Recover site %d successful at time stamp %s" % (site_id, str(self.time_stamp)))
         return True
 
     def fail(self, site_id):
@@ -284,11 +289,7 @@ class Transaction_Manager:
         print("Has made site %d failed" % site_id)
         return True
 
-    def is_replicated_variable(self, variable_id):
-        if variable_id % 2 == 1:
-            return False
-        else:
-            return True
+
 
 
 # if __name__ == "__main__":
