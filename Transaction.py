@@ -1,21 +1,7 @@
 
 
 
-# boolean blocked;
-#     int start_time;
-#     boolean aborted;
-#     boolean readonly;
 
-#     int WaitingForTransactionId;
-
-#     HashMap<Integer,Integer> snapshot;
-
-#     HashMap<Integer, Integer> cache;
-#     HashSet<Integer> accessedsites;
-
-#     //  allen's instant variables
-#     //  varId, siteId
-#     HashMap<Integer, LinkedList<Integer>> sites;
 class Transaction:
     def __init__(self, start_time, read_only) -> None:
         self.blocked = False
